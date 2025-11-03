@@ -9,7 +9,6 @@ namespace computational_geometry
     {
     public:
         Chull2(const std::vector<Eigen::Vector2d> &input_points);
-        auto sorted_indices() const -> const std::vector<int> &;
 
     private:
         // 凸包計算対象の点群
@@ -28,9 +27,56 @@ namespace computational_geometry
         // 時計回り頂点リスト
         std::vector<int> kcv_;
 
-        auto sort_points_by_x() -> void;
+        // 凸包頂点番号
+        std::vector<int> kvert_;
+
+        auto sort_points_by_x_then_y() -> void;
 
         auto generate_initial_triangle() -> void;
+
+        auto set_initial_vertex_list_structure() -> void;
+
+        int kemp_;
+
+        friend struct Chull2TestAccess;
+    };
+
+    struct Chull2TestAccess
+    {
+        static void GenerateInitialTriangle(Chull2 &instance)
+        {
+            instance.generate_initial_triangle();
+        }
+
+        static void SetInitialVertexListStructure(Chull2 &instance)
+        {
+            instance.set_initial_vertex_list_structure();
+        }
+
+        static const std::vector<int> &kvert(const Chull2 &instance)
+        {
+            return instance.kvert_;
+        }
+
+        static const std::vector<int> &kccv(const Chull2 &instance)
+        {
+            return instance.kccv_;
+        }
+
+        static const std::vector<int> &kcv(const Chull2 &instance)
+        {
+            return instance.kcv_;
+        }
+
+        static const std::vector<int> &mol(const Chull2 &instance)
+        {
+            return instance.mol_;
+        }
+
+        static int kemp(const Chull2 &instance)
+        {
+            return instance.kemp_;
+        }
     };
 }
 #endif // CHULL2_H
