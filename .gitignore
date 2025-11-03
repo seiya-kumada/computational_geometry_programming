@@ -1,0 +1,33 @@
+# Build directories
+build/
+Testing/
+cmake-build-*/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+Makefile
+
+# Compiled objects
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+
+# OS / editor artifacts
+.DS_Store
+*.swp
+*.swo
+*~

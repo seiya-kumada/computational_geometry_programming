@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug with LLDB",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/a.out", // 実行ファイルのパス
+            "args": [], // プログラムに渡す引数（必要に応じて変更）
+            "cwd": "${workspaceFolder}", // 作業ディレクトリ
+            "preRunCommands": [
+                "settings set target.run-args []" // LLDB に実行時引数を設定（必要に応じて変更）
+            ]
+        }
+    ]
+}
