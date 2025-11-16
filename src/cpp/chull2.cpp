@@ -6,7 +6,7 @@
 namespace cg = computational_geometry;
 
 cg::Chull2::Chull2(const std::vector<Eigen::Vector2d> &input_points)
-    : input_points_{input_points},
+    : input_points_{input_points},// この添え字がNAMEに相当
       mol_(input_points.size()),
       nvlist_(),
       kccv_(input_points.size()),
@@ -80,4 +80,9 @@ auto cg::Chull2::set_initial_vertex_list_structure() -> void
     }
     kvert_.back() = 0;
     kemp_ = 3;
+}
+
+auto cg::Chull2::set_initial_values() -> void{
+    mright_ = 2;// 最初の三角形の右端頂点のインデックス(mol_の添え字)
+    inext_ = 3;// 凸包に追加される次の頂点のインデックス(mol_の添え字)
 }

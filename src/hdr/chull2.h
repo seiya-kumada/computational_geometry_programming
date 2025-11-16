@@ -16,18 +16,19 @@ namespace computational_geometry
 
         // x座標ソート後の点を「元の並び番号」で表すためのリスト
         // 元の並び番号はテキストのNAMEに相当
+        // 整列番号（NAMEを入れる）
         std::vector<int> mol_;
 
         // 凸包の頂点リスト
         std::vector<int> nvlist_;
 
-        // 反時計回り頂点リスト
+        // 反時計回り頂点リスト（NAMEを入れる）
         std::vector<int> kccv_;
 
-        // 時計回り頂点リスト
+        // 時計回り頂点リスト（NAMEを入れる）
         std::vector<int> kcv_;
 
-        // 凸包頂点番号
+        // 凸包頂点番号（NAMEを入れる）
         std::vector<int> kvert_;
 
         auto sort_points_by_x_then_y() -> void;
@@ -35,8 +36,11 @@ namespace computational_geometry
         auto generate_initial_triangle() -> void;
 
         auto set_initial_vertex_list_structure() -> void;
+        auto set_initial_values() -> void;
 
         int kemp_;
+        int mright_;
+        int inext_;
 
         friend struct Chull2TestAccess;
     };
