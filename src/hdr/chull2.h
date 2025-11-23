@@ -37,6 +37,15 @@ namespace computational_geometry
 
         auto set_initial_vertex_list_structure() -> void;
         auto set_initial_values() -> void;
+        auto add_other_input_points_one_by_one() -> void;
+        auto generate_upper_part_of_convex_hull(int newv) -> int;
+        auto find_upper_tangent_point(int newv, int mv1, int jv1) -> int;
+        auto generate_lower_part_of_convex_hull(int newv) -> int;
+        auto find_lower_tangent_point(int newv, int mv1, int jv1) -> int;
+        auto replace_vertices() -> void;
+        auto add_next_point() -> void;
+        auto generate_output() -> void;
+        auto fetch_unused_vertex_index() -> int;
 
         int kemp_;
         int mright_;
