@@ -127,6 +127,26 @@ struct Chull2TestAccess
         return instance.find_upper_tangent_point(newv, mv1, jv1);
     }
 
+    static int FindLowerTangentPoint(Chull2& instance, int newv, int mv1, int jv1)
+    {
+        return instance.find_lower_tangent_point(newv, mv1, jv1);
+    }
+
+    static int GenerateUpperPartOfConvexHull(Chull2& instance, int newv)
+    {
+        return instance.generate_upper_part_of_convex_hull(newv);
+    }
+
+    static int GenerateLowerPartOfConvexHull(Chull2& instance, int newv)
+    {
+        return instance.generate_lower_part_of_convex_hull(newv);
+    }
+
+    static void ReplaceVertices(Chull2& instance, int newv, int muppv, int mlowv)
+    {
+        instance.replace_vertices(newv, muppv, mlowv);
+    }
+
     static void set_mright(Chull2& instance, int value)
     {
         instance.mright_ = value;

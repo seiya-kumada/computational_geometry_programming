@@ -187,11 +187,8 @@ TEST(Chull2Test, FetchUnusedVertexIndex_FollowsLinkedList)
     EXPECT_EQ(0, cg::Chull2TestAccess::kemp(chull));
 }
 
-TEST(Chull2Test, FindUpperTangentPoint_ImmediatelyFindsFirstPoint)
+TEST(Chull2Test, FindUpperTangentPoint_1)
 {
-    // 凸包: (0,0) -> (2,0) -> (1,2) (反時計回り)
-    // 新しい点: (3,1) - 右側に追加
-    // (3,1)から(2,0)への接線が既に上接線
     const std::vector<Eigen::Vector2d> points{
         {0.0, 0.0},  // index 0
         {2.0, 0.0},  // index 1
@@ -201,8 +198,6 @@ TEST(Chull2Test, FindUpperTangentPoint_ImmediatelyFindsFirstPoint)
 
     cg::Chull2 chull(points);
 
-    // 凸包の構造を設定（三角形: 0 -> 1 -> 2 -> 0）
-    // kvert_: 凸包頂点の実際の点のインデックス
     cg::Chull2TestAccess::SortPointsByXThenY(chull);
     const auto& mol = cg::Chull2TestAccess::mol(chull);
     EXPECT_EQ(mol, (std::vector<int>{0, 2, 1, 3}));
@@ -224,77 +219,393 @@ TEST(Chull2Test, FindUpperTangentPoint_ImmediatelyFindsFirstPoint)
     // (3,1), (2,0), (1,2) で左折するので、凸包頂点1が上接線点
     EXPECT_EQ(1, result);
 }
-/*
-TEST(Chull2Test, FindUpperTangentPoint_SearchesMultipleVertices)
+
+TEST(Chull2Test, FindUpperTangentPoint_2)
 {
-    // 凸包: (0,0) -> (2,0) -> (3,2) -> (1,3) (反時計回り)
-    // 新しい点: (4,1.5)
-    // (4,1.5)から開始して上接線を探す
     const std::vector<Eigen::Vector2d> points{
         {0.0, 0.0},  // index 0
         {2.0, 0.0},  // index 1
         {3.0, 2.0},  // index 2
-        {1.0, 3.0},  // index 3
-        {4.0, 1.5}   // index 4 - 追加する点
+        {4.0, 1.5}   // index 3 - 追加する点
     };
 
     cg::Chull2 chull(points);
 
     // 凸包の構造を設定（四角形: 0 -> 1 -> 2 -> 3 -> 0）
-    cg::Chull2TestAccess::set_kvert_at(chull, 0, 0);
-    cg::Chull2TestAccess::set_kvert_at(chull, 1, 1);
-    cg::Chull2TestAccess::set_kvert_at(chull, 2, 2);
-    cg::Chull2TestAccess::set_kvert_at(chull, 3, 3);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    // mol_: ソート後の点の元のインデックス（入力点番号）
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
 
-    // kccv_: 反時計回り
-    cg::Chull2TestAccess::set_kccv_at(chull, 0, 1);
-    cg::Chull2TestAccess::set_kccv_at(chull, 1, 2);
-    cg::Chull2TestAccess::set_kccv_at(chull, 2, 3);
-    cg::Chull2TestAccess::set_kccv_at(chull, 3, 0);
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
 
-    // 点1(2,0)が右端
-    cg::Chull2TestAccess::set_mright(chull, 1);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
 
-    // find_upper_tangent_point(newv=4, mv1=1, jv1=1)
-    auto result = cg::Chull2TestAccess::FindUpperTangentPoint(chull, 4, 1, 1);
-
-    // (4,1.5), (2,0), (3,2): 右折 -> 続行
-    // (4,1.5), (3,2), (1,3): 左折 -> 凸包頂点2が上接線点
+    const auto& result = cg::Chull2TestAccess::FindUpperTangentPoint(chull, 3, 2, 2);
     EXPECT_EQ(2, result);
 }
 
-TEST(Chull2Test, FindUpperTangentPoint_WithSquareConvexHull)
+TEST(Chull2Test, FindUpperTangentPoint_3)
 {
-    // 凸包: (0,0) -> (2,0) -> (2,2) -> (0,2) (反時計回り)
-    // 新しい点: (3,1) - 右側に追加
     const std::vector<Eigen::Vector2d> points{
         {0.0, 0.0},  // index 0
         {2.0, 0.0},  // index 1
         {2.0, 2.0},  // index 2
-        {0.0, 2.0},  // index 3
-        {3.0, 1.0}   // index 4 - 追加する点
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    auto result = cg::Chull2TestAccess::FindUpperTangentPoint(chull, 3, 1, 1);
+
+    EXPECT_EQ(2, result);
+}
+
+TEST(Chull2Test, FindLowerTangentPoint_1)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {1.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
     };
 
     cg::Chull2 chull(points);
 
-    // 凸包の構造を設定
-    cg::Chull2TestAccess::set_kvert_at(chull, 0, 0);
-    cg::Chull2TestAccess::set_kvert_at(chull, 1, 1);
-    cg::Chull2TestAccess::set_kvert_at(chull, 2, 2);
-    cg::Chull2TestAccess::set_kvert_at(chull, 3, 3);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 2, 1, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
 
-    cg::Chull2TestAccess::set_kccv_at(chull, 0, 1);
-    cg::Chull2TestAccess::set_kccv_at(chull, 1, 2);
-    cg::Chull2TestAccess::set_kccv_at(chull, 2, 3);
-    cg::Chull2TestAccess::set_kccv_at(chull, 3, 0);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
 
-    // 点1(2,0)が右端
-    cg::Chull2TestAccess::set_mright(chull, 1);
+    const auto& result = cg::Chull2TestAccess::FindLowerTangentPoint(chull, 3, 2, 1);
 
-    auto result = cg::Chull2TestAccess::FindUpperTangentPoint(chull, 4, 1, 1);
+    EXPECT_EQ(2, result);
+}
 
-    // (3,1), (2,0), (2,2): 左折 -> 凸包頂点1が上接線点
+TEST(Chull2Test, FindLowerTangentPoint_2)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {3.0, 2.0},  // index 2
+        {4.0, 1.5}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    const auto& result = cg::Chull2TestAccess::FindLowerTangentPoint(chull, 3, 2, 2);
     EXPECT_EQ(1, result);
 }
-*/
+
+TEST(Chull2Test, FindLowerTangentPoint_3)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {2.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    auto result = cg::Chull2TestAccess::FindLowerTangentPoint(chull, 3, 1, 1);
+
+    EXPECT_EQ(1, result);
+}
+
+TEST(Chull2Test, GenerateUpperPartOfConvexHull_1)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {1.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 2, 1, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+
+    EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    const auto& result = cg::Chull2TestAccess::GenerateUpperPartOfConvexHull(chull, 3);
+
+    // (3,1), (2,0), (1,2) で左折するので、凸包頂点1が上接線点
+    EXPECT_EQ(1, result);
+}
+
+TEST(Chull2Test, Chull2Test_GenerateUpperPartOfConvexHull_2)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {3.0, 2.0},  // index 2
+        {4.0, 1.5}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+
+    // 凸包の構造を設定（四角形: 0 -> 1 -> 2 -> 3 -> 0）
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    // mol_: ソート後の点の元のインデックス（入力点番号）
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    const auto& result = cg::Chull2TestAccess::GenerateUpperPartOfConvexHull(chull, 3);
+    EXPECT_EQ(2, result);
+}
+
+TEST(Chull2Test, GenerateUpperPartOfConvexHull_3)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {2.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    auto result = cg::Chull2TestAccess::GenerateUpperPartOfConvexHull(chull, 3);
+
+    EXPECT_EQ(2, result);
+}
+
+TEST(Chull2Test, GenerateLowerPartOfConvexHull_1)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {1.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 2, 1, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+
+    EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    const auto& result = cg::Chull2TestAccess::GenerateLowerPartOfConvexHull(chull, 3);
+
+    EXPECT_EQ(2, result);
+}
+
+TEST(Chull2Test, Chull2Test_GenerateLowerPartOfConvexHull_2)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {3.0, 2.0},  // index 2
+        {4.0, 1.5}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    const auto& result = cg::Chull2TestAccess::GenerateLowerPartOfConvexHull(chull, 3);
+    EXPECT_EQ(1, result);
+}
+
+TEST(Chull2Test, Chull2Test_GenerateLowerPartOfConvexHull_3)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {2.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 1, 2, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    auto result = cg::Chull2TestAccess::GenerateLowerPartOfConvexHull(chull, 3);
+
+    EXPECT_EQ(1, result);
+}
+
+TEST(Chull2Test, ReplaceVertices_1)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0
+        {2.0, 0.0},  // index 1
+        {1.0, 2.0},  // index 2
+        {3.0, 1.0}   // index 3 - 追加する点
+    };
+
+    cg::Chull2 chull(points);
+
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    EXPECT_EQ(mol, (std::vector<int>{0, 2, 1, 3}));
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+
+    EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{2, 0, 1, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    // upper, lowerは凸法頂点番号
+    const auto& upper = cg::Chull2TestAccess::GenerateUpperPartOfConvexHull(chull, 3);
+    const auto& lower = cg::Chull2TestAccess::GenerateLowerPartOfConvexHull(chull, 3);
+    EXPECT_EQ(1, upper);
+    EXPECT_EQ(2, lower);
+    const auto& unsed_index = cg::Chull2TestAccess::FetchUnusedVertexIndex(chull);
+    EXPECT_EQ(3, unsed_index);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 0}));
+    cg::Chull2TestAccess::ReplaceVertices(chull, 3, upper, lower);
+    EXPECT_EQ(kvert, (std::vector<int>{3, 2, 1, 0}));
+    //     EXPECT_EQ(kccv, (std::vector<int>{2, 0, 1, 3}));
+}
 }  // namespace

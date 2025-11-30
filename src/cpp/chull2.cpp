@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <numeric>
-
 namespace cg = computational_geometry;
 
 cg::Chull2::Chull2(const std::vector<Eigen::Vector2d>& input_points)
@@ -133,6 +132,9 @@ auto cg::Chull2::generate_upper_part_of_convex_hull(int newv) -> int
 // 再帰を使わずに実装する
 auto cg::Chull2::find_upper_tangent_point(int newv, int mv1, int jv1) -> int
 {
+    // newv: 追加する入力点番号
+    // mv1: 凸包頂点番号
+    // jv1: 入力点番号
     while (true)
     {
         auto mv2 = kccv_.at(static_cast<std::size_t>(mv1));   // 次の凸包頂点番号
