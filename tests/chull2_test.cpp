@@ -601,11 +601,14 @@ TEST(Chull2Test, ReplaceVertices_1)
     const auto& lower = cg::Chull2TestAccess::GenerateLowerPartOfConvexHull(chull, 3);
     EXPECT_EQ(1, upper);
     EXPECT_EQ(2, lower);
-    const auto& unsed_index = cg::Chull2TestAccess::FetchUnusedVertexIndex(chull);
-    EXPECT_EQ(3, unsed_index);
+    const auto& kemp = cg::Chull2TestAccess::kemp(chull);
+    EXPECT_EQ(3, kemp);
+    // const auto& unsed_index = cg::Chull2TestAccess::FetchUnusedVertexIndex(chull);
+    // EXPECT_EQ(3, unsed_index);
     EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 0}));
     cg::Chull2TestAccess::ReplaceVertices(chull, 3, upper, lower);
-    EXPECT_EQ(kvert, (std::vector<int>{3, 2, 1, 0}));
-    //     EXPECT_EQ(kccv, (std::vector<int>{2, 0, 1, 3}));
+    EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 3}));
+    EXPECT_EQ(kccv, (std::vector<int>{2, 0, 3, 1}));
+    EXPECT_EQ(kcv, (std::vector<int>{1, 3, 0, 2}));
 }
 }  // namespace

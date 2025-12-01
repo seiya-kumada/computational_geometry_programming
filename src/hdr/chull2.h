@@ -46,8 +46,8 @@ class Chull2
     auto find_lower_tangent_point(int newv, int mv1, int jv1) -> int;
     auto replace_vertices(int newv, int muppv, int mlowv) -> void;
     auto generate_output() -> std::vector<Eigen::Vector2d>;
-    auto fetch_unused_vertex_index() -> int;
-
+    auto fetch_new_vertex_index() -> int;
+    auto return_unused_vertex_index(int mv) -> void;
     int kemp_;
     int mright_;
     int inext_;
@@ -109,7 +109,7 @@ struct Chull2TestAccess
 
     static int FetchUnusedVertexIndex(Chull2& instance)
     {
-        return instance.fetch_unused_vertex_index();
+        return instance.fetch_new_vertex_index();
     }
 
     static void set_kemp(Chull2& instance, int value)

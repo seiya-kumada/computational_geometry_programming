@@ -148,12 +148,22 @@ auto cg::Chull2::find_upper_tangent_point(int newv, int mv1, int jv1) -> int
             return muppv;
         }
         else
-        {  // TODO: utils::turns_leftが3値を返すようにする。1, 0, -1
+        {
+            if (mv1 != mright_)
+            {
+                return_unused_vertex_index(mv1);
+            }
             // 次の頂点へ移動（反時計回り）
             mv1 = mv2;
             jv1 = jv2;
         }
     }
+}
+
+auto cg::Chull2::return_unused_vertex_index(int mv) -> void
+{
+    kvert_.at(static_cast<std::size_t>(mv)) = kemp_;
+    kemp_ = mv;
 }
 auto cg::Chull2::generate_lower_part_of_convex_hull(int newv) -> int
 {
@@ -185,7 +195,7 @@ auto cg::Chull2::find_lower_tangent_point(int newv, int mv1, int jv1) -> int
 }
 auto cg::Chull2::replace_vertices(int newv, int muppv, int mlowv) -> void
 {
-    auto mv = fetch_unused_vertex_index();  // 新しい凸包頂点番号を取得
+    auto mv = fetch_new_vertex_index();  // 新しい凸包頂点番号を取得
     kvert_.at(static_cast<std::size_t>(mv)) = newv;
     // ここでkccv_とkcv_を更新する
     // 上接線の更新
@@ -200,8 +210,12 @@ auto cg::Chull2::generate_output() -> std::vector<Eigen::Vector2d>
     return {};
 }
 
-auto cg::Chull2::fetch_unused_vertex_index() -> int
+auto cg::Chull2::fetch_new_vertex_index() -> int
 {
+    if (kemp_ == 0)
+    {
+        throw std::runtime_error("No more vertex list");
+    }
     auto unused_index = kemp_;
     kemp_ = kvert_.at(static_cast<std::size_t>(kemp_));
     return unused_index;
