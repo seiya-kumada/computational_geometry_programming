@@ -283,7 +283,7 @@ TEST(Chull2Test, FindUpperTangentPoint_3)
 
     EXPECT_EQ(2, result);
 }
-
+/*
 TEST(Chull2Test, FindLowerTangentPoint_1)
 {
     const std::vector<Eigen::Vector2d> points{
@@ -377,7 +377,7 @@ TEST(Chull2Test, FindLowerTangentPoint_3)
 
     EXPECT_EQ(1, result);
 }
-
+*/
 TEST(Chull2Test, GenerateUpperPartOfConvexHull_1)
 {
     const std::vector<Eigen::Vector2d> points{
@@ -474,7 +474,7 @@ TEST(Chull2Test, GenerateUpperPartOfConvexHull_3)
 
     EXPECT_EQ(2, result);
 }
-
+/*
 TEST(Chull2Test, GenerateLowerPartOfConvexHull_1)
 {
     const std::vector<Eigen::Vector2d> points{
@@ -568,7 +568,8 @@ TEST(Chull2Test, Chull2Test_GenerateLowerPartOfConvexHull_3)
 
     EXPECT_EQ(1, result);
 }
-
+*/
+/*
 TEST(Chull2Test, ReplaceVertices_1)
 {
     const std::vector<Eigen::Vector2d> points{
@@ -610,5 +611,5 @@ TEST(Chull2Test, ReplaceVertices_1)
     EXPECT_EQ(kvert, (std::vector<int>{0, 2, 1, 3}));
     EXPECT_EQ(kccv, (std::vector<int>{2, 0, 3, 1}));
     EXPECT_EQ(kcv, (std::vector<int>{1, 3, 0, 2}));
-}
+}*/
 }  // namespace

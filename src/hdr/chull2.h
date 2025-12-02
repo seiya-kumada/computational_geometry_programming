@@ -42,8 +42,8 @@ class Chull2
     auto add_other_input_points_one_by_one() -> void;
     auto generate_upper_part_of_convex_hull(int newv) -> int;
     auto find_upper_tangent_point(int newv, int mv1, int jv1) -> int;
-    auto generate_lower_part_of_convex_hull(int newv) -> int;
-    auto find_lower_tangent_point(int newv, int mv1, int jv1) -> int;
+    auto generate_lower_part_of_convex_hull(int newv, int muppv) -> int;
+    auto find_lower_tangent_point(int newv, int mv1, int jv1, int muppv) -> int;
     auto replace_vertices(int newv, int muppv, int mlowv) -> void;
     auto generate_output() -> std::vector<Eigen::Vector2d>;
     auto fetch_new_vertex_index() -> int;
@@ -127,9 +127,9 @@ struct Chull2TestAccess
         return instance.find_upper_tangent_point(newv, mv1, jv1);
     }
 
-    static int FindLowerTangentPoint(Chull2& instance, int newv, int mv1, int jv1)
+    static int FindLowerTangentPoint(Chull2& instance, int newv, int mv1, int jv1, int muppv)
     {
-        return instance.find_lower_tangent_point(newv, mv1, jv1);
+        return instance.find_lower_tangent_point(newv, mv1, jv1, muppv);
     }
 
     static int GenerateUpperPartOfConvexHull(Chull2& instance, int newv)
@@ -137,9 +137,9 @@ struct Chull2TestAccess
         return instance.generate_upper_part_of_convex_hull(newv);
     }
 
-    static int GenerateLowerPartOfConvexHull(Chull2& instance, int newv)
+    static int GenerateLowerPartOfConvexHull(Chull2& instance, int newv, int muppv)
     {
-        return instance.generate_lower_part_of_convex_hull(newv);
+        return instance.generate_lower_part_of_convex_hull(newv, muppv);
     }
 
     static void ReplaceVertices(Chull2& instance, int newv, int muppv, int mlowv)
