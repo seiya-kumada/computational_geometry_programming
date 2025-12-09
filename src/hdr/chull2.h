@@ -33,19 +33,24 @@ class Chull2
     // 凸包頂点番号（NAMEを入れる）
     std::vector<int> kvert_;
 
+    // test ok
     auto sort_points_by_x_then_y() -> void;
-
+    // test ok
     auto generate_initial_triangle() -> void;
-
+    // test ok
     auto set_initial_vertex_list_structure() -> void;
+    // test ok
     auto set_initial_values() -> void;
+
     auto add_other_input_points_one_by_one() -> void;
     auto generate_upper_part_of_convex_hull(int newv) -> int;
+    // test ok
     auto find_upper_tangent_point(int newv, int mv1, int jv1) -> int;
     auto generate_lower_part_of_convex_hull(int newv, int muppv) -> int;
     auto find_lower_tangent_point(int newv, int mv1, int jv1, int muppv) -> int;
     auto replace_vertices(int newv, int muppv, int mlowv) -> void;
     auto generate_output() -> std::vector<Eigen::Vector2d>;
+    // test ok
     auto fetch_new_vertex_index() -> int;
     auto return_unused_vertex_index(int mv) -> void;
     int kemp_;
@@ -107,7 +112,7 @@ struct Chull2TestAccess
         return instance.inext_;
     }
 
-    static int FetchUnusedVertexIndex(Chull2& instance)
+    static int FetchNewVertexIndex(Chull2& instance)
     {
         return instance.fetch_new_vertex_index();
     }

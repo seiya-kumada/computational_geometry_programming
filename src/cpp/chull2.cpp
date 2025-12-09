@@ -162,6 +162,7 @@ auto cg::Chull2::find_upper_tangent_point(int newv, int mv1, int jv1) -> int
 
 auto cg::Chull2::return_unused_vertex_index(int mv) -> void
 {
+    // mv: 返却する凸包頂点番号
     kvert_.at(static_cast<std::size_t>(mv)) = kemp_;
     kemp_ = mv;
 }
