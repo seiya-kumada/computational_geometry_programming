@@ -43,11 +43,15 @@ class Chull2
     auto set_initial_values() -> void;
 
     auto add_other_input_points_one_by_one() -> void;
+    // test ok
     auto generate_upper_part_of_convex_hull(int newv) -> int;
     // test ok
     auto find_upper_tangent_point(int newv, int mv1, int jv1) -> int;
+    // test ok
     auto generate_lower_part_of_convex_hull(int newv, int muppv) -> int;
+    // test ok
     auto find_lower_tangent_point(int newv, int mv1, int jv1, int muppv) -> int;
+    // test ok
     auto replace_vertices(int newv, int muppv, int mlowv) -> void;
     auto generate_output() -> std::vector<Eigen::Vector2d>;
     // test ok
@@ -150,6 +154,16 @@ struct Chull2TestAccess
     static void ReplaceVertices(Chull2& instance, int newv, int muppv, int mlowv)
     {
         instance.replace_vertices(newv, muppv, mlowv);
+    }
+
+    static void ReturnUnusedVertexIndex(Chull2& instance, int mv)
+    {
+        instance.return_unused_vertex_index(mv);
+    }
+
+    static void AddOtherInputPointsOneByOne(Chull2& instance)
+    {
+        instance.add_other_input_points_one_by_one();
     }
 
     static void set_mright(Chull2& instance, int value)

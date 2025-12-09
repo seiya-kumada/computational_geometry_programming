@@ -174,6 +174,9 @@ auto cg::Chull2::generate_lower_part_of_convex_hull(int newv, int muppv) -> int
 }
 auto cg::Chull2::find_lower_tangent_point(int newv, int mv1, int jv1, int muppv) -> int
 {
+    // newv: 追加する入力点番号
+    // mv1: 右端の凸包頂点番号
+    // jv1: mv1の入力点番号
     while (true)
     {
         auto mv2 = kcv_.at(static_cast<std::size_t>(mv1));    // 次の凸包頂点番号
