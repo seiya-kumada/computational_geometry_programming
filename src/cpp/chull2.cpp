@@ -7,7 +7,7 @@
 namespace cg = computational_geometry;
 
 cg::Chull2::Chull2(const std::vector<Eigen::Vector2d>& input_points)
-    : input_points_{input_points},  // この添え字がNAMEに相当
+    : input_points_{input_points},  // この添え字がテキストのNAMEに相当
       input_point_size_{static_cast<int>(input_points.size())}, mol_(input_points.size()),
       kccv_(input_points.size()), kcv_(input_points.size()), kvert_(input_points.size()), kemp_{0}
 {

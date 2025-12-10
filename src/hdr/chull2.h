@@ -7,10 +7,25 @@
 
 namespace computational_geometry
 {
+/**
+ * @brief 2次元凸包を生成するクラス
+ *
+ * 増分法（incremental algorithm）を用いて凸包を構築する。
+ * 計算量はO(n log n)。
+ */
 class Chull2
 {
   public:
+    /**
+     * @brief コンストラクタ
+     * @param input_points 入力点群
+     */
     Chull2(const std::vector<Eigen::Vector2d>& input_points);
+
+    /**
+     * @brief 凸包を計算する
+     * @return 凸包を構成する入力点番号（反時計回り順）
+     */
     auto execute() -> std::vector<int>;
 
   private:
@@ -33,31 +48,20 @@ class Chull2
     // 凸包頂点番号（入力点番号を入れる）
     std::vector<int> kvert_;
 
-    // test ok
     auto sort_points_by_x_then_y() -> void;
-    // test ok
     auto generate_initial_triangle() -> void;
-    // test ok
     auto set_initial_vertex_list_structure() -> void;
-    // test ok
     auto set_initial_values() -> void;
-    // test ok
     auto add_other_input_points_one_by_one() -> void;
-    // test ok
     auto generate_upper_part_of_convex_hull(int newv) -> int;
-    // test ok
     auto find_upper_tangent_point(int newv, int mv1, int jv1) -> int;
-    // test ok
     auto generate_lower_part_of_convex_hull(int newv, int muppv) -> int;
-    // test ok
     auto find_lower_tangent_point(int newv, int mv1, int jv1, int muppv) -> int;
-    // test ok
     auto replace_vertices(int newv, int muppv, int mlowv) -> void;
     auto generate_output() -> std::vector<int>;
-    // test ok
     auto fetch_new_vertex_index() -> int;
-    // test ok
     auto return_unused_vertex_index(int mv) -> void;
+
     int kemp_;
     int mright_;
     int inext_;

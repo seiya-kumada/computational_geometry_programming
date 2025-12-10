@@ -31,3 +31,5 @@ Makefile
 *.swp
 *.swo
 *~
+
+doc/*

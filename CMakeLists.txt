@@ -4,6 +4,8 @@ project(computatioal_geometry_programming)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(OpenCV REQUIRED)
+
 add_library(utils_lib
     src/cpp/utils.cpp
     src/cpp/chull2.cpp
@@ -11,6 +13,10 @@ add_library(utils_lib
 target_include_directories(utils_lib
     PUBLIC
     src/hdr
+)
+target_link_libraries(utils_lib
+    PUBLIC
+    ${OpenCV_LIBS}
 )
 
 add_executable(${PROJECT_NAME}
@@ -42,3 +48,4 @@ target_link_libraries(utils_tests
 
 include(GoogleTest)
 gtest_discover_tests(utils_tests)
+
