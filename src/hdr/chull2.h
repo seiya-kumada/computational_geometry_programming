@@ -10,7 +10,7 @@ class Chull2
 {
   public:
     Chull2(const std::vector<Eigen::Vector2d>& input_points);
-    auto execute() -> std::vector<Eigen::Vector2d>;
+    auto execute() -> std::vector<int>;
 
   private:
     // 凸包計算対象の点群
@@ -20,9 +20,6 @@ class Chull2
     // 元の並び番号はテキストのNAMEに相当
     // 整列番号（NAMEを入れる）
     std::vector<int> mol_;
-
-    // 凸包の頂点リスト
-    std::vector<int> nvlist_;
 
     // 反時計回り頂点リスト（NAMEを入れる）
     std::vector<int> kccv_;
@@ -41,7 +38,7 @@ class Chull2
     auto set_initial_vertex_list_structure() -> void;
     // test ok
     auto set_initial_values() -> void;
-
+    // test ok
     auto add_other_input_points_one_by_one() -> void;
     // test ok
     auto generate_upper_part_of_convex_hull(int newv) -> int;
@@ -53,9 +50,10 @@ class Chull2
     auto find_lower_tangent_point(int newv, int mv1, int jv1, int muppv) -> int;
     // test ok
     auto replace_vertices(int newv, int muppv, int mlowv) -> void;
-    auto generate_output() -> std::vector<Eigen::Vector2d>;
+    auto generate_output() -> std::vector<int>;
     // test ok
     auto fetch_new_vertex_index() -> int;
+    // test ok
     auto return_unused_vertex_index(int mv) -> void;
     int kemp_;
     int mright_;
@@ -179,6 +177,11 @@ struct Chull2TestAccess
     static void SortPointsByXThenY(Chull2& instance)
     {
         instance.sort_points_by_x_then_y();
+    }
+
+    static auto Execute(Chull2& instance) -> std::vector<int>
+    {
+        return instance.execute();
     }
 };
 }  // namespace computational_geometry

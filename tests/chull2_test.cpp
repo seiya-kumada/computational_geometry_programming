@@ -15,7 +15,8 @@ TEST(Chull2Test, SortIndicesByXThenY)
         {0.0, 5.0}   // index 3
     };
 
-    const cg::Chull2 chull(points);
+    cg::Chull2 chull(points);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
     const auto& sorted = cg::Chull2TestAccess::mol(chull);
 
     ASSERT_EQ(sorted.size(), points.size());
@@ -32,7 +33,8 @@ TEST(Chull2Test, SortIndicesByXThenY_WithDuplicateCoordinates)
         {1.0, 0.5}    // index 3
     };
 
-    const cg::Chull2 chull(points);
+    cg::Chull2 chull(points);
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
     const auto& sorted = cg::Chull2TestAccess::mol(chull);
 
     const std::vector<int> expected{2, 1, 3, 0};
@@ -714,23 +716,54 @@ TEST(Chull2Test, ReturnUnusedVertexIndex_1)
 
 TEST(Chull2Test, AddOtherInputPointsOneByOne_1)
 {
-    // 5点の凸包を構築するテスト（点の削除を伴う）
-    // 初期三角形の右端頂点が、新しい点の追加により削除されるケース
-    //
-    //        (2,3) p2
-    //         /\
-    //        /  \
-    //       /    \
-    //      /  p3  \      p4
-    //     / (2,1)  \   (4,1)
-    //    /          \
-    //   p0----------p1
-    // (0,0)       (3,0)
-    //
-    // ソート後: p0(0,0) -> p3(2,1) -> p2(2,3) -> p1(3,0) -> p4(4,1)
-    // 初期三角形: p0, p3, p2
-    // p1追加時: p3が凸包から削除される
-    // p4追加時: 削除なし
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0: p0
+        {3.0, 0.0},  // index 1: p1
+        {2.0, 3.0},  // index 2: p2
+        {2.0, 1.0},  // index 3: p3 - 凸包内部に入り削除される点
+    };
+
+    cg::Chull2 chull(points);
+
+    // 初期化処理
+    cg::Chull2TestAccess::SortPointsByXThenY(chull);
+    const auto& mol = cg::Chull2TestAccess::mol(chull);
+    // x座標でソート: p0(0,0), p3(2,1), p2(2,3), p1(3,0)
+    EXPECT_EQ(mol, (std::vector<int>{0, 3, 2, 1}));
+
+    cg::Chull2TestAccess::GenerateInitialTriangle(chull);
+    cg::Chull2TestAccess::SetInitialVertexListStructure(chull);
+    cg::Chull2TestAccess::SetInitialValues(chull);
+
+    // 初期状態の確認
+    // 初期三角形: 凸包頂点0=p0, 凸包頂点1=p3, 凸包頂点2=p2
+    const auto& kvert = cg::Chull2TestAccess::kvert(chull);
+    const auto& kccv = cg::Chull2TestAccess::kccv(chull);
+    const auto& kcv = cg::Chull2TestAccess::kcv(chull);
+    EXPECT_EQ(kvert, (std::vector<int>{0, 3, 2, 0}));
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    EXPECT_EQ(2, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::inext(chull));
+
+    // 残りの点を追加
+    cg::Chull2TestAccess::AddOtherInputPointsOneByOne(chull);
+
+    EXPECT_EQ(1, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(4, cg::Chull2TestAccess::inext(chull));
+
+    const auto kemp = cg::Chull2TestAccess::kemp(chull);
+    EXPECT_EQ(3, kemp);
+
+    EXPECT_EQ(1, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(4, cg::Chull2TestAccess::inext(chull));
+    EXPECT_EQ(kvert, (std::vector<int>{0, 1, 2, 0}));
+    EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
+    EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
+}
+TEST(Chull2Test, AddOtherInputPointsOneByOne_2)
+{
     const std::vector<Eigen::Vector2d> points{
         {0.0, 0.0},  // index 0: p0
         {3.0, 0.0},  // index 1: p1
@@ -763,15 +796,11 @@ TEST(Chull2Test, AddOtherInputPointsOneByOne_1)
     // 残りの点を追加
     cg::Chull2TestAccess::AddOtherInputPointsOneByOne(chull);
 
-    // 最終的な凸包: p0, p1, p4, p2 が反時計回りに並ぶ
-    // p3は凸包から削除され、フリーリストに返却される
-    EXPECT_EQ(4, cg::Chull2TestAccess::mright(chull));
+    EXPECT_EQ(3, cg::Chull2TestAccess::mright(chull));
     EXPECT_EQ(5, cg::Chull2TestAccess::inext(chull));
 
-    // p3(凸包頂点番号1)がフリーリストに返却されているはず
-    // kemp_が1を指しているか、kvert_[1]がフリーリストの次を指している
     const auto kemp = cg::Chull2TestAccess::kemp(chull);
-    EXPECT_EQ(1, kemp);  // フリーリストの先頭が凸包頂点番号1(元のp3)
+    EXPECT_EQ(4, kemp);  // フリーリストの先頭が凸包頂点番号1(元のp3)
 }
 
 }  // namespace

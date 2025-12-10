@@ -8,14 +8,13 @@ namespace cg = computational_geometry;
 
 cg::Chull2::Chull2(const std::vector<Eigen::Vector2d>& input_points)
     : input_points_{input_points},  // この添え字がNAMEに相当
-      mol_(input_points.size()), nvlist_(), kccv_(input_points.size()), kcv_(input_points.size()),
+      mol_(input_points.size()), kccv_(input_points.size()), kcv_(input_points.size()),
       kvert_(input_points.size()), kemp_{0}
 {
     std::iota(mol_.begin(), mol_.end(), 0);
-    sort_points_by_x_then_y();
 }
 
-auto cg::Chull2::execute() -> std::vector<Eigen::Vector2d>
+auto cg::Chull2::execute() -> std::vector<int>
 {
     // 最初に入力点をx座標優先でソートする
     sort_points_by_x_then_y();
@@ -34,6 +33,21 @@ auto cg::Chull2::execute() -> std::vector<Eigen::Vector2d>
 
     // 凸包頂点リストを生成する
     return generate_output();
+}
+
+auto cg::Chull2::generate_output() -> std::vector<int>
+{
+    std::vector<int> output_points;
+    auto mv = 0;
+    auto mstart = mv;
+    do
+    {
+        const auto jv = kvert_.at(static_cast<std::size_t>(mv));
+        output_points.push_back(jv);
+        mv = kccv_.at(static_cast<std::size_t>(mv));
+    } while (mv != mstart);
+
+    return output_points;
 }
 
 auto cg::Chull2::sort_points_by_x_then_y() -> void
@@ -102,7 +116,7 @@ auto cg::Chull2::set_initial_vertex_list_structure() -> void
 
 auto cg::Chull2::set_initial_values() -> void
 {
-    mright_ = 2;  // 最初の三角形の右端頂点のインデックス(mol_の添え字)
+    mright_ = 2;  // 最初の三角形の右端の凸包頂点番号
     inext_ = 3;   // 凸包に追加される次の頂点のインデックス(mol_の添え字)
 }
 
@@ -210,11 +224,6 @@ auto cg::Chull2::replace_vertices(int newv, int muppv, int mlowv) -> void
     kcv_.at(static_cast<std::size_t>(muppv)) = mv;
     kccv_.at(static_cast<std::size_t>(mlowv)) = mv;
     mright_ = mv;
-}
-
-auto cg::Chull2::generate_output() -> std::vector<Eigen::Vector2d>
-{
-    return {};
 }
 
 auto cg::Chull2::fetch_new_vertex_index() -> int
