@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 
     cg::Chull2 chull(points);
     auto const& outputs = chull.execute();
-    // outputsには凸包頂点の入力点インデックスが反時計回りで格納されている。
+    // outputsには凸包を構成する入力点番号が反時計回りで格納されている。
     // これを入力点座標に変換しJSON形式で保存する。
     const std::string output_filename =
         "/home/kumada/data/computational_geometry_programming/convex_hull_output.json";
