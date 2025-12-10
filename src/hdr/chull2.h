@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include <vector>
+
 namespace computational_geometry
 {
 class Chull2
@@ -16,18 +17,20 @@ class Chull2
     // 凸包計算対象の点群
     std::vector<Eigen::Vector2d> input_points_;
 
+    int input_point_size_;
+
     // x座標ソート後の点を「元の並び番号」で表すためのリスト
     // 元の並び番号はテキストのNAMEに相当
     // 整列番号（NAMEを入れる）
     std::vector<int> mol_;
 
-    // 反時計回り頂点リスト（NAMEを入れる）
+    // 反時計り凸包頂点番号のリスト
     std::vector<int> kccv_;
 
-    // 時計回り頂点リスト（NAMEを入れる）
+    // 時計回り凸包頂点番号のリスト
     std::vector<int> kcv_;
 
-    // 凸包頂点番号（NAMEを入れる）
+    // 凸包頂点番号（入力点番号を入れる）
     std::vector<int> kvert_;
 
     // test ok
@@ -177,11 +180,6 @@ struct Chull2TestAccess
     static void SortPointsByXThenY(Chull2& instance)
     {
         instance.sort_points_by_x_then_y();
-    }
-
-    static auto Execute(Chull2& instance) -> std::vector<int>
-    {
-        return instance.execute();
     }
 };
 }  // namespace computational_geometry

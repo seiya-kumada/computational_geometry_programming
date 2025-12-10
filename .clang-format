@@ -58,6 +58,7 @@ SpacesInCStyleCastParentheses: false
 SpacesInContainerLiterals: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
+SeparateDefinitionBlocks: Always
 
 # Line breaking
 ColumnLimit: 100

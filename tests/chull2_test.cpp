@@ -762,6 +762,7 @@ TEST(Chull2Test, AddOtherInputPointsOneByOne_1)
     EXPECT_EQ(kccv, (std::vector<int>{1, 2, 0, 0}));
     EXPECT_EQ(kcv, (std::vector<int>{2, 0, 1, 0}));
 }
+
 TEST(Chull2Test, AddOtherInputPointsOneByOne_2)
 {
     const std::vector<Eigen::Vector2d> points{
@@ -803,4 +804,22 @@ TEST(Chull2Test, AddOtherInputPointsOneByOne_2)
     EXPECT_EQ(4, kemp);  // フリーリストの先頭が凸包頂点番号1(元のp3)
 }
 
+TEST(Chull2Test, Execute_1)
+{
+    const std::vector<Eigen::Vector2d> points{
+        {0.0, 0.0},  // index 0: p0
+        {3.0, 0.0},  // index 1: p1
+        {2.0, 3.0},  // index 2: p2
+        {2.0, 1.0},  // index 3: p3 - 凸包内部に入り削除される点
+        {4.0, 1.0}   // index 4: p4
+    };
+
+    cg::Chull2 chull(points);
+    auto const& outputs = chull.execute();
+    EXPECT_EQ(outputs.size(), 4);
+    EXPECT_EQ(outputs[0], 0);
+    EXPECT_EQ(outputs[1], 1);
+    EXPECT_EQ(outputs[2], 4);
+    EXPECT_EQ(outputs[3], 2);
+}
 }  // namespace
