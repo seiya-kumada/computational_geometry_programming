@@ -39,5 +39,17 @@ void save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
  * @param output_file_path 出力ファイル（画像）のパス
  */
 void draw_convex_hull(const std::string& input_file_path, const std::string& output_file_path);
+
+/**
+ * @brief 乱数で入力点群を生成する
+ *
+ * 指定された点数と乱数シードに基づいて、2次元平面上のランダムな点群を生成する。
+ *
+ * @param n_points 生成する点の数
+ * @param seed 乱数シード
+ * @return 生成された点群
+ */
+auto make_input_points(int n_points, int seed) -> std::vector<Eigen::Vector2d>;
+
 }  // namespace utils
 #endif  // UTILS_H

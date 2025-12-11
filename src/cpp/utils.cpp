@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <opencv2/opencv.hpp>
 #include <optional>
+#include <random>
 #include <set>
 
 bool utils::turns_left(const Eigen::Vector2d& pi, const Eigen::Vector2d& pj,
@@ -42,8 +43,25 @@ void utils::save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
     }
 }
 
+auto utils::make_input_points(int n_points, int seed) -> std::vector<Eigen::Vector2d>
+{
+    std::vector<Eigen::Vector2d> points;
+    points.reserve(n_points);
+
+    std::mt19937 gen(seed);
+    std::uniform_real_distribution<double> dist(0.0, 100.0);
+
+    for (int i = 0; i < n_points; ++i)
+    {
+        points.emplace_back(dist(gen), dist(gen));
+    }
+    return points;
+}
+
 namespace
 {
+
+// JSONファイルを読み込む
 auto read_json(const std::string& input_file_path) -> std::optional<nlohmann::json>
 {
     // JSONファイルを読み込む
@@ -58,6 +76,7 @@ auto read_json(const std::string& input_file_path) -> std::optional<nlohmann::js
     return j;
 }
 
+// 全入力点を取得
 auto extract_all_points(const nlohmann::json& j) -> std::vector<cv::Point2d>
 {
     std::vector<cv::Point2d> all_points;
@@ -68,8 +87,10 @@ auto extract_all_points(const nlohmann::json& j) -> std::vector<cv::Point2d>
     return all_points;
 }
 
+// 凸包頂点のインデックスを取得
 auto extract_convex_hull_indices(const nlohmann::json& value) -> std::set<int>
 {
+    // あとで凸包頂点のインデックスを高速検索するためにsetに格納
     std::set<int> convex_hull_indices;
     for (const auto& idx : value["convex_hull_indices"])
     {
@@ -78,6 +99,7 @@ auto extract_convex_hull_indices(const nlohmann::json& value) -> std::set<int>
     return convex_hull_indices;
 }
 
+// 凸包頂点の座標を取得
 auto make_convex_hull_points(const std::vector<cv::Point2d>& all_points,
                              const nlohmann::json& value) -> std::vector<cv::Point2d>
 {
@@ -90,6 +112,7 @@ auto make_convex_hull_points(const std::vector<cv::Point2d>& all_points,
     return convex_hull_points;
 }
 
+// 座標の範囲を計算
 auto decide_point_region(const std::vector<cv::Point2d>& all_points)
     -> std::tuple<double, double, double, double>
 {
@@ -105,6 +128,40 @@ auto decide_point_region(const std::vector<cv::Point2d>& all_points)
         max_y = std::max(max_y, p.y);
     }
     return std::make_tuple(min_x, max_x, min_y, max_y);
+}
+
+// 凸包の辺を描画（青）
+auto draw_convex_hull_edges(cv::Mat& image, const std::vector<cv::Point2d>& convex_hull_points,
+                            const std::function<cv::Point(const cv::Point2d&)>& to_image_coord)
+    -> void
+{
+    for (std::size_t i = 0; i < convex_hull_points.size(); ++i)
+    {
+        auto p1 = to_image_coord(convex_hull_points[i]);
+        auto p2 = to_image_coord(convex_hull_points[(i + 1) % convex_hull_points.size()]);
+        cv::line(image, p1, p2, cv::Scalar(255, 0, 0), 2);
+    }
+}
+
+// 全入力点を描画
+auto draw_all_points(cv::Mat& image, const std::vector<cv::Point2d>& all_points,
+                     const std::set<int>& convex_hull_indices,
+                     const std::function<cv::Point(const cv::Point2d&)>& to_image_coord) -> void
+{
+    for (std::size_t i = 0; i < all_points.size(); ++i)
+    {
+        auto img_p = to_image_coord(all_points[i]);
+        if (convex_hull_indices.count(static_cast<int>(i)) > 0)
+        {
+            // 凸包頂点は赤で描画
+            cv::circle(image, img_p, 5, cv::Scalar(0, 0, 255), -1);
+        }
+        else
+        {
+            // 内部点は緑で描画
+            cv::circle(image, img_p, 2, cv::Scalar(0, 200, 0), -1);
+        }
+    }
 }
 }  // namespace
 
@@ -154,28 +211,10 @@ void utils::draw_convex_hull(const std::string& input_file_path,
     cv::Mat image(image_size, image_size, CV_8UC3, cv::Scalar(255, 255, 255));
 
     // 凸包の辺を描画（青）
-    for (std::size_t i = 0; i < convex_hull_points.size(); ++i)
-    {
-        auto p1 = to_image_coord(convex_hull_points[i]);
-        auto p2 = to_image_coord(convex_hull_points[(i + 1) % convex_hull_points.size()]);
-        cv::line(image, p1, p2, cv::Scalar(255, 0, 0), 2);
-    }
+    draw_convex_hull_edges(image, convex_hull_points, to_image_coord);
 
     // 全入力点を描画
-    for (std::size_t i = 0; i < all_points.size(); ++i)
-    {
-        auto img_p = to_image_coord(all_points[i]);
-        if (convex_hull_indices.count(static_cast<int>(i)) > 0)
-        {
-            // 凸包頂点は赤で描画
-            cv::circle(image, img_p, 5, cv::Scalar(0, 0, 255), -1);
-        }
-        else
-        {
-            // 内部点は緑で描画
-            cv::circle(image, img_p, 5, cv::Scalar(0, 200, 0), -1);
-        }
-    }
+    draw_all_points(image, all_points, convex_hull_indices, to_image_coord);
 
     // 画像を保存
     cv::imwrite(output_file_path, image);

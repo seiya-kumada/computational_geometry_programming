@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(computatioal_geometry_programming)
+project(computational_geometry_programming)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -49,3 +49,9 @@ target_link_libraries(utils_tests
 include(GoogleTest)
 gtest_discover_tests(utils_tests)
 
+find_package(Boost REQUIRED COMPONENTS program_options)
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+    utils_lib
+    Boost::program_options
+)

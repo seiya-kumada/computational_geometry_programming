@@ -14,3 +14,12 @@ cmake --build build
 # PDF作成
 # cd doc/latex
 # make
+
+JSON_PATH="/home/kumada/data/computational_geometry_programming/convex_hull_output.json"
+IMAGE_PATH="/home/kumada/data/computational_geometry_programming/convex_hull_output.jpg"
+N_POINTS=100
+./build/computational_geometry_programming \
+    --json_path "${JSON_PATH}" \
+    --image_path "${IMAGE_PATH}" \
+    --n_points "${N_POINTS}" \
+    --seed 12345
