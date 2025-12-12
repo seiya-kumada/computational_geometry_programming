@@ -29,7 +29,16 @@ auto extract_args(int argc, char* argv[])
         std::cout << desc << std::endl;
         return std::nullopt;
     }
-    po::notify(vm);
+    try
+    {
+        po::notify(vm);
+    }
+    catch (const po::error& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << desc << std::endl;
+        return std::nullopt;
+    }
     const auto input = vm["json_path"].as<std::string>();
     const auto output = vm["image_path"].as<std::string>();
     const auto n_points = vm["n_points"].as<int>();
@@ -59,16 +68,14 @@ int main(int argc, char* argv[])
     }
 
     // 引数を取得
-    std::string json_file_path, image_file_path;
-    int n_points, seed;
-    std::tie(json_file_path, image_file_path, n_points, seed) = args_opt.value();
+    const auto [json_file_path, image_file_path, n_points, seed] = args_opt.value();
 
     // 入力点群を作成
     const auto points = utils::make_input_points(n_points, seed);
 
     // 凸包を計算
     cg::Chull2 chull(points);
-    auto const& outputs = chull.execute();
+    auto outputs = chull.execute();
 
     // 入力点の座標と凸包頂点の座標をJSONファイルに保存
     utils::save_convex_hull_to_json(points, outputs, json_file_path);

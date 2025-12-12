@@ -21,6 +21,7 @@ class Chull2
      * @param input_points 入力点群
      */
     Chull2(const std::vector<Eigen::Vector2d>& input_points);
+    Chull2(std::vector<Eigen::Vector2d>&& input_points);
 
     /**
      * @brief 凸包を計算する

@@ -31,7 +31,7 @@ void save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
                               const std::string& filename);
 
 /**
- * @brief 凸法を描画する
+ * @brief 凸包を描画する
  *
  * 凸法を2次元平面に描画する。
  *
