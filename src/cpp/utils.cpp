@@ -56,7 +56,7 @@ auto utils::make_input_points(int n_points, int seed) -> std::vector<Eigen::Vect
     points.reserve(n_points);
 
     std::mt19937 gen(seed);
-    std::uniform_real_distribution<double> dist(0.0, 100.0);
+    std::uniform_real_distribution<double> dist(-100.0, 100.0);
 
     for (int i = 0; i < n_points; ++i)
     {
