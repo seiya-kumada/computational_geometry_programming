@@ -3,6 +3,7 @@
 
 #include <eigen3/Eigen/Dense>
 
+#include <expected>
 #include <vector>
 
 namespace computational_geometry
@@ -25,9 +26,10 @@ class Chull2
 
     /**
      * @brief 凸包を計算する
-     * @return 凸包を構成する入力点番号（反時計回り順）
+     * @return
+     * 成功した場合は凸包を構成する入力点のインデックスのリスト、失敗した場合はエラーメッセージ
      */
-    auto execute() -> std::vector<int>;
+    auto execute() -> std::expected<std::vector<int>, std::string>;
 
   private:
     // 凸包計算対象の点群

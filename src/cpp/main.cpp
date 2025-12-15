@@ -2,6 +2,7 @@
 #include "utils.h"
 
 #include <boost/program_options.hpp>
+#include <expected>
 #include <iostream>
 #include <optional>
 
@@ -11,7 +12,7 @@ namespace po = boost::program_options;
 namespace
 {
 auto extract_args(int argc, char* argv[])
-    -> std::optional<std::tuple<std::string, std::string, int, int>>
+    -> std::expected<std::tuple<std::string, std::string, int, int>, std::string>
 {
     po::options_description desc("Options");
     // clang-format off
@@ -26,8 +27,9 @@ auto extract_args(int argc, char* argv[])
     po::store(po::parse_command_line(argc, argv, desc), vm);
     if (vm.count("help"))
     {
-        std::cout << desc << std::endl;
-        return std::nullopt;
+        std::ostringstream oss;
+        oss << desc;
+        return std::unexpected<std::string>(oss.str());
     }
     try
     {
@@ -35,9 +37,7 @@ auto extract_args(int argc, char* argv[])
     }
     catch (const po::error& e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
-        std::cerr << desc << std::endl;
-        return std::nullopt;
+        return std::unexpected<std::string>(e.what());
     }
     const auto input = vm["json_path"].as<std::string>();
     const auto output = vm["image_path"].as<std::string>();
@@ -62,25 +62,42 @@ int main(int argc, char* argv[])
 {
     // コマンドライン引数を解析
     auto args_opt = extract_args(argc, argv);
-    if (!args_opt.has_value())
+    if (!args_opt)
     {
+        std::cout << args_opt.error() << std::endl;
         return 1;
     }
 
     // 引数を取得
-    const auto [json_file_path, image_file_path, n_points, seed] = args_opt.value();
+    const auto [json_file_path, image_file_path, n_points, seed] = *args_opt;
 
     // 入力点群を作成
     const auto points = utils::make_input_points(n_points, seed);
 
     // 凸包を計算
     cg::Chull2 chull(points);
-    auto outputs = chull.execute();
+    auto result_0 = chull.execute();
+    if (!result_0)
+    {
+        std::cerr << result_0.error() << std::endl;
+        return 1;
+    }
+    const auto outputs = *result_0;
 
     // 入力点の座標と凸包頂点の座標をJSONファイルに保存
-    utils::save_convex_hull_to_json(points, outputs, json_file_path);
+    auto result_1 = utils::save_convex_hull_to_json(points, outputs, json_file_path);
+    if (!result_1)
+    {
+        std::cerr << result_1.error() << std::endl;
+        return 1;
+    }
 
     // 凸法を描画する
-    utils::draw_convex_hull(json_file_path, image_file_path);
+    auto result_2 = utils::draw_convex_hull(json_file_path, image_file_path);
+    if (!result_2)
+    {
+        std::cerr << result_2.error() << std::endl;
+        return 1;
+    }
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <expected>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <opencv2/opencv.hpp>
@@ -15,9 +16,10 @@ bool utils::turns_left(const Eigen::Vector2d& pi, const Eigen::Vector2d& pj,
     return m.determinant() > 0;
 }
 
-void utils::save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
+auto utils::save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
                                      const std::vector<int>& convex_hull_indices,
                                      const std::string& filename)
+    -> std::expected<void, std::string>
 {
     nlohmann::json j;
 
@@ -41,6 +43,11 @@ void utils::save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
         file << j.dump(4);  // インデント幅4で整形して保存
         file.close();
     }
+    else
+    {
+        return std::unexpected<std::string>("ファイルを開けません: " + filename);
+    }
+    return {};
 }
 
 auto utils::make_input_points(int n_points, int seed) -> std::vector<Eigen::Vector2d>
@@ -62,13 +69,13 @@ namespace
 {
 
 // JSONファイルを読み込む
-auto read_json(const std::string& input_file_path) -> std::optional<nlohmann::json>
+auto read_json(const std::string& input_file_path) -> std::expected<nlohmann::json, std::string>
 {
     // JSONファイルを読み込む
     std::ifstream file(input_file_path);
     if (!file.is_open())
     {
-        return std::nullopt;
+        return std::unexpected<std::string>("ファイルを開けません: " + input_file_path);
     }
     nlohmann::json j;
     file >> j;
@@ -165,23 +172,24 @@ auto draw_all_points(cv::Mat& image, const std::vector<cv::Point2d>& all_points,
 }
 }  // namespace
 
-void utils::draw_convex_hull(const std::string& input_file_path,
+auto utils::draw_convex_hull(const std::string& input_file_path,
                              const std::string& output_file_path)
+    -> std::expected<void, std::string>
 {
     // JSONファイルを読み込む
     const auto j = read_json(input_file_path);
-    if (!j.has_value())
+    if (!j)
     {
-        return;
+        return std::unexpected<std::string>("JSONファイルの読み込みに失敗しました: " + j.error());
     }
 
     // 全入力点を取得
-    const auto& value = j.value();
+    const auto& value = *j;
     const auto all_points = extract_all_points(value);
 
     if (all_points.empty())
     {
-        return;
+        return std::unexpected<std::string>("入力点が空です");
     }
 
     // 凸包頂点のインデックスを取得
@@ -218,4 +226,5 @@ void utils::draw_convex_hull(const std::string& input_file_path,
 
     // 画像を保存
     cv::imwrite(output_file_path, image);
+    return {};
 }

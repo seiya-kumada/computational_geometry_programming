@@ -2,6 +2,8 @@
 #define UTILS_H
 #include <eigen3/Eigen/Dense>
 
+#include <expected>
+
 namespace utils
 {
 /**
@@ -25,10 +27,11 @@ bool turns_left(const Eigen::Vector2d& pi, const Eigen::Vector2d& pj, const Eige
  * @param points 入力点群
  * @param convex_hull_indices 凸包を構成する入力点のインデックス
  * @param filename 出力ファイルのパス
+ * @return 成功した場合はvoid、失敗した場合はエラーメッセージ
  */
-void save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
+auto save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
                               const std::vector<int>& convex_hull_indices,
-                              const std::string& filename);
+                              const std::string& filename) -> std::expected<void, std::string>;
 
 /**
  * @brief 凸包を描画する
@@ -37,8 +40,10 @@ void save_convex_hull_to_json(const std::vector<Eigen::Vector2d>& points,
  *
  * @param input_file_path 入力ファイル（JSON形式）のパス
  * @param output_file_path 出力ファイル（画像）のパス
+ * @return 成功した場合はvoid、失敗した場合はエラーメッセージ
  */
-void draw_convex_hull(const std::string& input_file_path, const std::string& output_file_path);
+auto draw_convex_hull(const std::string& input_file_path, const std::string& output_file_path)
+    -> std::expected<void, std::string>;
 
 /**
  * @brief 乱数で入力点群を生成する

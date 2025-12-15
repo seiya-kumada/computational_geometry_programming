@@ -22,4 +22,4 @@ N_POINTS=100
     --json_path "${JSON_PATH}" \
     --image_path "${IMAGE_PATH}" \
     --n_points "${N_POINTS}" \
-    --seed 12345
+    --seed 2 

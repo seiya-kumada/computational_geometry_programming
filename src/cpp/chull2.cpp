@@ -34,8 +34,12 @@ cg::Chull2::Chull2(std::vector<Eigen::Vector2d>&& input_points)
     std::iota(mol_.begin(), mol_.end(), 0);
 }
 
-auto cg::Chull2::execute() -> std::vector<int>
+auto cg::Chull2::execute() -> std::expected<std::vector<int>, std::string>
 {
+    if (input_point_size_ < 3)
+    {
+        return std::unexpected<std::string>("入力点が3点未満です。凸包を計算できません。");
+    }
     // 最初に入力点をx座標優先でソートする
     sort_points_by_x_then_y();
 

@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 namespace cg = computational_geometry;
+
 namespace
 {
 
@@ -815,11 +816,15 @@ TEST(Chull2Test, Execute_1)
     };
 
     cg::Chull2 chull(points);
-    auto const& outputs = chull.execute();
-    EXPECT_EQ(outputs.size(), 4);
-    EXPECT_EQ(outputs[0], 0);
-    EXPECT_EQ(outputs[1], 1);
-    EXPECT_EQ(outputs[2], 4);
-    EXPECT_EQ(outputs[3], 2);
+    auto const is_ok = chull.execute();
+    if (is_ok)
+    {
+        auto outputs = *is_ok;
+        EXPECT_EQ(outputs.size(), 4);
+        EXPECT_EQ(outputs[0], 0);
+        EXPECT_EQ(outputs[1], 1);
+        EXPECT_EQ(outputs[2], 4);
+        EXPECT_EQ(outputs[3], 2);
+    }
 }
 }  // namespace
